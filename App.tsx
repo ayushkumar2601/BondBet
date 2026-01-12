@@ -9,6 +9,7 @@ import Portfolio from './components/Portfolio';
 import YieldPage from './components/YieldPage';
 import Education from './components/Education';
 import Footer from './components/Footer';
+import MintSuccessModal from './components/MintSuccessModal';
 
 // --- Types & Constants ---
 export interface Bond {
@@ -57,6 +58,14 @@ const App: React.FC = () => {
   const [tick, setTick] = useState(0);
   const [isMinting, setIsMinting] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [mintSuccessData, setMintSuccessData] = useState<{
+    isOpen: boolean;
+    bondName: string;
+    txSignature: string;
+    investedAmount: number;
+    units: number;
+    certificateId: string;
+  } | null>(null);
 
   // Initialize connection to Devnet
   const connection = new web3.Connection(web3.clusterApiUrl('devnet'), 'confirmed');
@@ -193,7 +202,14 @@ const App: React.FC = () => {
       setPortfolio(prev => [...prev, newHolding]);
       fetchBalance(new web3.PublicKey(pubkey));
       
-      alert(`Success! Fractional Bond NFT minted. \nTx: ${signature}`);
+      setMintSuccessData({
+        isOpen: true,
+        bondName: bond.name,
+        txSignature: signature,
+        investedAmount: inrAmount,
+        units: inrAmount / bond.pricePerUnit,
+        certificateId: newHolding.id
+      });
     } catch (err: any) {
       console.error("[Phantom] Transaction Error:", err);
       if (err.code === 4001) {
@@ -247,6 +263,19 @@ const App: React.FC = () => {
       </main>
 
       <Footer />
+
+      {mintSuccessData && (
+        <MintSuccessModal
+          isOpen={mintSuccessData.isOpen}
+          onClose={() => setMintSuccessData(null)}
+          bondName={mintSuccessData.bondName}
+          publicKey={pubkey || ''}
+          txSignature={mintSuccessData.txSignature}
+          investedAmount={mintSuccessData.investedAmount}
+          units={mintSuccessData.units}
+          certificateId={mintSuccessData.certificateId}
+        />
+      )}
     </div>
   );
 };

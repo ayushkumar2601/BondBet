@@ -16,7 +16,7 @@ const Hero: React.FC<HeroProps> = ({ onConnect, isConnected }) => {
           <h1 className="text-huge font-black uppercase mb-8">
             <span className="accent-glow text-orange-500">OWN INDIAN</span> <br />
             <span className="text-white italic">GOVT BONDS.</span> <br />
-            <span className="text-green-500">START WITH ₹100</span><span className="text-orange-500">.</span>
+            <span className="text-green-500">START WITH </span> <span className="text-black drop-shadow-[0_0_1px_rgba(255,215,0,0.8)]" style={{ textShadow: '0 0 20px #ffd700, 0 0 40px #ffd700, 0 0 60px #ffd700' }}>₹100</span> <span className="text-orange-500">.</span>
           </h1>
           
           <p className="max-w-xl text-zinc-400 text-xl md:text-2xl font-medium leading-relaxed mb-10">
