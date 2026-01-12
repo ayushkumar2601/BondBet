@@ -52,7 +52,7 @@ const Hero: React.FC<HeroProps> = ({ onConnect, isConnected }) => {
             
             <div className="absolute top-10 right-10 w-32 h-32 border-2 border-orange-500/30 rounded-full animate-pulse"></div>
             <div className="absolute bottom-10 left-10 text-xs font-bold uppercase tracking-[0.5em] text-white/40 vertical-text" style={{ writingMode: 'vertical-rl' }}>
-              RBI COMPLIANT • SOLANA • RUPEE
+              RBI COMPLIANT • SOLANA • RUPEE • BYBIT
             </div>
           </div>
           
