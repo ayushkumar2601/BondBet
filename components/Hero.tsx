@@ -42,9 +42,9 @@ const Hero: React.FC<HeroProps> = ({ onConnect, isConnected }) => {
 
         {/* Right Side: Visual */}
         <div className="flex-1 relative w-full h-[400px] lg:h-[600px] mt-12 lg:mt-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-orange-500/20 to-transparent rounded-3xl overflow-hidden border border-white/5">
+          <div className="absolute inset-0 bg-gradient-to-br from-orange-500/40 to-transparent rounded-3xl overflow-hidden border border-white/5">
             <img 
-              src="https://images.unsplash.com/photo-1621416848446-9f6efdec4fc4?auto=format&fit=crop&q=80&w=1200" 
+              src="./money.png" 
               alt="Indian Finance" 
               className="w-full h-full object-cover mix-blend-overlay opacity-50 grayscale hover:grayscale-0 transition-all duration-700"
             />
