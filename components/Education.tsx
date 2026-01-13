@@ -4,9 +4,10 @@ import { Bond } from '../App';
 
 interface EducationProps {
   marketBonds: Bond[];
+  onNavigate?: (view: string) => void;
 }
 
-const Education: React.FC<EducationProps> = ({ marketBonds }) => {
+const Education: React.FC<EducationProps> = ({ marketBonds, onNavigate }) => {
   const exampleBond = marketBonds[0];
 
   return (
@@ -63,7 +64,12 @@ const Education: React.FC<EducationProps> = ({ marketBonds }) => {
         <p className="text-zinc-500 max-w-2xl mx-auto mb-12 text-xl italic">
           Join the protocol bringing India's most stable assets to the global liquidity of Solana Devnet.
         </p>
-        <button className="bg-orange-500 text-black px-16 py-6 rounded-full font-black uppercase tracking-widest hover:bg-white transition-all shadow-2xl shadow-orange-500/10">Launch Dashboard</button>
+        <button 
+          onClick={() => onNavigate?.('dashboard')}
+          className="bg-orange-500 text-black px-16 py-6 rounded-full font-black uppercase tracking-widest hover:bg-white transition-all shadow-2xl shadow-orange-500/10"
+        >
+          Launch Dashboard
+        </button>
       </div>
     </div>
   );

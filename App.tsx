@@ -334,7 +334,7 @@ const App: React.FC = () => {
       case 'market': return <Marketplace bonds={marketBonds} balance={solBalance * SOL_TO_INR_DEMO_RATE} solBalance={solBalance} onBuy={buyBondWithNFT} isMinting={isMinting} />;
       case 'portfolio': return <Portfolio portfolio={portfolio} tick={tick} />;
       case 'yield': return <YieldPage portfolio={portfolio} balance={solBalance * SOL_TO_INR_DEMO_RATE} tick={tick} />;
-      case 'education': return <Education marketBonds={marketBonds} />;
+      case 'education': return <Education marketBonds={marketBonds} onNavigate={setCurrentView} />;
       case 'landing': return <LandingPage onConnect={handleWalletClick} isConnected={walletConnected} />;
       default: return <LandingPage onConnect={handleWalletClick} isConnected={walletConnected} />;
     }
