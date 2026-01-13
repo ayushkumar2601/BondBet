@@ -10,6 +10,7 @@ import YieldPage from './components/YieldPage';
 import Education from './components/Education';
 import Footer from './components/Footer';
 import MintSuccessModal from './components/MintSuccessModal';
+import { saveHolding, fetchHoldings, HoldingRecord } from './lib/supabase';
 
 // --- Types & Constants ---
 export interface Bond {
@@ -86,6 +87,28 @@ const App: React.FC = () => {
     }
   }, []);
 
+  // Load holdings from Supabase when wallet connects
+  const loadHoldings = useCallback(async (walletAddress: string) => {
+    console.log('[Supabase] Loading holdings for wallet:', walletAddress);
+    const records = await fetchHoldings(walletAddress);
+    
+    // Convert Supabase records to Holding format
+    const holdings: Holding[] = records.map((r: HoldingRecord) => ({
+      id: r.id,
+      bondId: r.bond_id,
+      bondName: r.bond_name,
+      units: r.units,
+      investedAmount: r.invested_amount,
+      purchaseDate: r.purchase_date,
+      apy: r.apy,
+      maturityDate: r.maturity_date,
+      txHash: r.tx_hash
+    }));
+    
+    setPortfolio(holdings);
+    console.log('[Supabase] Loaded', holdings.length, 'holdings');
+  }, []);
+
   /**
    * CORRECT PHANTOM CONNECTION IMPLEMENTATION
    * Directly uses window.solana (Phantom Provider).
@@ -118,6 +141,7 @@ const App: React.FC = () => {
       setPubkey(publicKey);
       setWalletConnected(true);
       fetchBalance(response.publicKey);
+      loadHoldings(publicKey);
       
       // Auto-transition to dashboard if user is on landing page
       if (currentView === 'landing') {
@@ -198,6 +222,25 @@ const App: React.FC = () => {
         maturityDate: bond.maturityDate,
         txHash: signature
       };
+
+      // Save to Supabase
+      const holdingRecord: HoldingRecord = {
+        id: newHolding.id,
+        wallet_address: pubkey,
+        bond_id: newHolding.bondId,
+        bond_name: newHolding.bondName,
+        units: newHolding.units,
+        invested_amount: newHolding.investedAmount,
+        purchase_date: newHolding.purchaseDate,
+        apy: newHolding.apy,
+        maturity_date: newHolding.maturityDate,
+        tx_hash: newHolding.txHash
+      };
+      
+      const { success, error } = await saveHolding(holdingRecord);
+      if (!success) {
+        console.error('[Supabase] Failed to save holding:', error);
+      }
 
       setPortfolio(prev => [...prev, newHolding]);
       fetchBalance(new web3.PublicKey(pubkey));
