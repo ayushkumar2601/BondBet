@@ -41,7 +41,7 @@ const Hero: React.FC<HeroProps> = ({ onConnect, isConnected }) => {
         </div>
 
         {/* Right Side: Visual */}
-        <div className="flex-1 relative w-full h-[400px] lg:h-[600px] mt-12 lg:mt-0">
+        <div className="flex-1 relative w-full h-[400px] lg:h-[600px] -mt-28 lg:-mt-32">
           <div className="absolute inset-0 bg-gradient-to-br from-orange-500/40 to-transparent rounded-3xl overflow-hidden border border-white/5">
             <img 
               src="./money.png" 
