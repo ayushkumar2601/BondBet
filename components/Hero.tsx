@@ -1,5 +1,6 @@
 
 import React from 'react';
+import BondCard from './BondCard';
 
 interface HeroProps {
   onConnect: () => void;
@@ -26,7 +27,7 @@ const Hero: React.FC<HeroProps> = ({ onConnect, isConnected }) => {
 
           <div className="flex flex-wrap gap-4">
             <button 
-              onClick={(e) => {
+              onClick={(e: React.MouseEvent) => {
                 e.preventDefault();
                 onConnect();
               }}
@@ -40,26 +41,9 @@ const Hero: React.FC<HeroProps> = ({ onConnect, isConnected }) => {
           </div>
         </div>
 
-        {/* Right Side: Visual */}
-        <div className="flex-1 relative w-full h-[400px] lg:h-[600px] -mt-28 lg:-mt-32">
-          <div className="absolute inset-0 bg-gradient-to-br from-orange-500/40 to-transparent rounded-3xl overflow-hidden border border-white/5">
-            <img 
-              src="./money.png" 
-              alt="Indian Finance" 
-              className="w-full h-full object-cover mix-blend-overlay opacity-50 grayscale hover:grayscale-0 transition-all duration-700"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
-            
-            <div className="absolute top-10 right-10 w-32 h-32 border-2 border-orange-500/30 rounded-full animate-pulse"></div>
-            <div className="absolute bottom-10 left-10 text-xs font-bold uppercase tracking-[0.5em] text-white/40 vertical-text" style={{ writingMode: 'vertical-rl' }}>
-              RBI COMPLIANT • SOLANA • RUPEE • BYBIT
-            </div>
-          </div>
-          
-          <div className="absolute top-1/2 -left-8 -translate-y-1/2 bg-black/80 backdrop-blur-xl border border-white/10 p-8 rounded-3xl hidden md:block animate-bounce shadow-2xl">
-            <div className="text-orange-500 font-black text-4xl">7.4%</div>
-            <div className="text-zinc-500 text-xs font-bold uppercase tracking-wider">SDL Yield Avg</div>
-          </div>
+        {/* Right Side: Interactive Card */}
+        <div className="flex-1 flex items-center justify-center -mt-28 lg:-mt-32 ml-5">
+          <BondCard enableTilt={true} />
         </div>
       </div>
     </section>
