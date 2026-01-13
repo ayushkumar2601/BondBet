@@ -1,20 +1,66 @@
 <div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+
+# bondbuy
+
+### Fractional Government Bonds on Solana (Devnet)
+
+<p>
+  A Web3 platform that enables <strong>fractional investment in government bonds</strong> using
+  <strong>Phantom Wallet</strong>, <strong>SOL (Devnet)</strong>, and <strong>NFT-based ownership</strong>.
+</p>
+
+<p>
+  <em>Transparent • On-chain • Educational Demo</em>
+</p>
+
+---
+
 </div>
 
-# Run and deploy your AI Studio app
+## ✨ Overview
 
-This contains everything you need to run your app locally.
+**bondbuy** is a Solana-based Web3 application where users can invest in **fractional government bonds**.
+Each bond purchase is executed as a **real on-chain transaction** and results in an **NFT minted to the
+user’s Phantom wallet**, representing ownership of the bond fraction.
 
-View your app in AI Studio: https://ai.studio/apps/drive/1ZsGaCJb7G-Y7nBgVCyfEY9gqMLth1KiU
+> ⚠️ This project is a **demo / hackathon prototype**.  
+> It is **not a real financial product**.
 
-## Run Locally
+---
 
-**Prerequisites:**  Node.js
+## 🚀 Key Features
 
+<div align="center">
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+| Feature | Description |
+|-------|-------------|
+| 🔗 Phantom Wallet | Real Phantom extension popup for connect & signing |
+| 🧩 Fractional Bonds | Invest small ₹ amounts instead of full bond value |
+| 🖼️ Bond NFTs | Each purchase mints an NFT as proof of ownership |
+| 📊 Dashboard | Live portfolio metrics & yield overview |
+| 💼 Portfolio | View owned bond NFTs, maturity & returns |
+| 🌱 Yield Tracking | Accrued yield & projected maturity value |
+| 🔍 Explorer Links | Every transaction is verifiable on Solana Explorer |
+
+</div>
+
+---
+
+## 🧠 How bondbuy Works
+
+<div align="center">
+
+```text
+Connect Phantom Wallet
+        ↓
+Browse Bond Marketplace
+        ↓
+Enter Amount (₹)
+        ↓
+Approve SOL Transaction (Devnet)
+        ↓
+NFT Minted to Wallet
+        ↓
+View Portfolio & Yield
+
+</div>
