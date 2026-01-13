@@ -131,9 +131,31 @@ const App: React.FC = () => {
     console.log('[Phantom] Extension detected. Triggering connect() popup...');
 
     try {
+      // Check if already connected
+      if (solana.isConnected && solana.publicKey) {
+        const publicKey = solana.publicKey.toString();
+        console.log('[Phantom] Already connected. Public Key:', publicKey);
+        setPubkey(publicKey);
+        setWalletConnected(true);
+        fetchBalance(solana.publicKey);
+        loadHoldings(publicKey);
+        if (currentView === 'landing') {
+          setCurrentView('dashboard');
+        }
+        setIsConnecting(false);
+        return;
+      }
+
       // 2. Request Connection (Extension Popup)
-      // This will open the Phantom browser extension popup window.
-      const response = await solana.connect();
+      // Use eager connect first, then fall back to regular connect
+      let response;
+      try {
+        response = await solana.connect({ onlyIfTrusted: true });
+      } catch {
+        // If eager connect fails, try regular connect
+        response = await solana.connect();
+      }
+      
       const publicKey = response.publicKey.toString();
       
       console.log('[Phantom] Connection approved. Public Key:', publicKey);
@@ -149,17 +171,54 @@ const App: React.FC = () => {
       }
     } catch (err: any) {
       // Handle user cancellation (Error code 4001) or other errors
-      if (err.code === 4001) {
+      if (err.code === 4001 || err.message?.includes('User rejected')) {
         console.warn('[Phantom] Connection request was cancelled by the user.');
         alert("Connection request cancelled.");
       } else {
         console.error("[Phantom] Unexpected error during connection:", err);
-        alert("An error occurred while connecting to Phantom. Check the console for details.");
+        // Try to disconnect and reconnect
+        try {
+          await solana.disconnect();
+        } catch {}
+        alert("Connection failed. Please try again or refresh the page.");
       }
       setWalletConnected(false);
       setPubkey(null);
     } finally {
       setIsConnecting(false);
+    }
+  };
+
+  // Disconnect wallet function
+  const disconnectWallet = async () => {
+    const { solana } = window as any;
+    
+    console.log('[Phantom] Disconnecting wallet...');
+    
+    try {
+      if (solana) {
+        await solana.disconnect();
+      }
+    } catch (err) {
+      console.error('[Phantom] Error during disconnect:', err);
+    }
+    
+    // Reset state
+    setWalletConnected(false);
+    setPubkey(null);
+    setSolBalance(0);
+    setPortfolio([]);
+    setCurrentView('landing');
+    
+    console.log('[Phantom] Wallet disconnected successfully');
+  };
+
+  // Toggle wallet connection
+  const handleWalletClick = () => {
+    if (walletConnected) {
+      disconnectWallet();
+    } else {
+      connectWallet();
     }
   };
 
@@ -267,7 +326,7 @@ const App: React.FC = () => {
 
   const renderContent = () => {
     if (!walletConnected && !['education', 'landing', 'market'].includes(currentView)) {
-      return <LandingPage onConnect={connectWallet} isConnected={false} />;
+      return <LandingPage onConnect={handleWalletClick} isConnected={false} />;
     }
 
     switch (currentView) {
@@ -276,15 +335,15 @@ const App: React.FC = () => {
       case 'portfolio': return <Portfolio portfolio={portfolio} tick={tick} />;
       case 'yield': return <YieldPage portfolio={portfolio} balance={solBalance * SOL_TO_INR_DEMO_RATE} tick={tick} />;
       case 'education': return <Education marketBonds={marketBonds} />;
-      case 'landing': return <LandingPage onConnect={connectWallet} isConnected={walletConnected} />;
-      default: return <LandingPage onConnect={connectWallet} isConnected={walletConnected} />;
+      case 'landing': return <LandingPage onConnect={handleWalletClick} isConnected={walletConnected} />;
+      default: return <LandingPage onConnect={handleWalletClick} isConnected={walletConnected} />;
     }
   };
 
   return (
     <div className="min-h-screen flex flex-col selection:bg-orange-500 selection:text-black">
       <Navbar 
-        onConnect={connectWallet} 
+        onConnect={handleWalletClick} 
         isConnected={walletConnected} 
         address={pubkey} 
         onNavigate={setCurrentView} 
