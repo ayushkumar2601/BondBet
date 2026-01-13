@@ -62,5 +62,3 @@ Approve SOL Transaction (Devnet)
 NFT Minted to Wallet
         ↓
 View Portfolio & Yield
-
-</div>
