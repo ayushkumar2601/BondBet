@@ -11,7 +11,6 @@ interface YieldProps {
 const YieldPage: React.FC<YieldProps> = ({ portfolio, balance, tick }) => {
   const [investmentAmount, setInvestmentAmount] = useState<number>(10000);
   const [selectedApy, setSelectedApy] = useState<number>(7.18);
-  const [animatedBars, setAnimatedBars] = useState<number[]>(Array(12).fill(0));
   const [hoveredMonth, setHoveredMonth] = useState<number | null>(null);
 
   // Calculate stats from actual portfolio
@@ -52,23 +51,6 @@ const YieldPage: React.FC<YieldProps> = ({ portfolio, balance, tick }) => {
     
     return projections;
   }, [investmentAmount, selectedApy]);
-
-  // Animate bars on mount and when data changes
-  useEffect(() => {
-    const maxYield = monthlyProjections[11]?.yield || 1;
-    const targetHeights = monthlyProjections.map(p => (p.yield / maxYield) * 100);
-    
-    // Staggered animation
-    targetHeights.forEach((height, index) => {
-      setTimeout(() => {
-        setAnimatedBars(prev => {
-          const newBars = [...prev];
-          newBars[index] = height;
-          return newBars;
-        });
-      }, index * 80);
-    });
-  }, [monthlyProjections]);
 
   // APY options based on available bonds
   const apyOptions = [
@@ -154,74 +136,98 @@ const YieldPage: React.FC<YieldProps> = ({ portfolio, balance, tick }) => {
           {/* Live Chart */}
           <div className="relative">
             {/* Y-axis labels */}
-            <div className="absolute left-0 top-0 bottom-8 w-16 flex flex-col justify-between text-[9px] font-bold text-zinc-600 uppercase">
-              <span>₹{monthlyProjections[11]?.yield.toFixed(0)}</span>
-              <span>₹{(monthlyProjections[11]?.yield / 2).toFixed(0)}</span>
+            <div className="absolute left-0 top-0 bottom-12 w-20 flex flex-col justify-between text-[10px] font-bold text-zinc-500 pr-2 text-right">
+              <span>₹{monthlyProjections[11]?.total.toFixed(0)}</span>
+              <span>₹{((monthlyProjections[11]?.total + investmentAmount) / 2).toFixed(0)}</span>
+              <span>₹{investmentAmount.toLocaleString('en-IN')}</span>
               <span>₹0</span>
             </div>
             
             {/* Chart Area */}
-            <div className="ml-16">
-              <div className="flex items-end gap-2 h-[300px] border-b border-l border-white/10 pb-4 pl-4 relative">
+            <div className="ml-20">
+              <div className="flex items-end gap-3 h-[280px] border-b border-l border-white/10 relative bg-black/20 rounded-lg p-4">
                 {/* Grid lines */}
-                <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
-                  {[0, 1, 2, 3, 4].map((i) => (
-                    <div key={i} className="border-t border-white/5 w-full" />
+                <div className="absolute inset-4 flex flex-col justify-between pointer-events-none">
+                  {[0, 1, 2, 3].map((i) => (
+                    <div key={i} className="border-t border-dashed border-white/10 w-full" />
                   ))}
                 </div>
                 
                 {/* Bars */}
-                {monthlyProjections.map((projection, i) => (
+                {monthlyProjections.map((projection, i) => {
+                  // Calculate bar height as percentage of total value relative to max
+                  const maxTotal = monthlyProjections[11]?.total || 1;
+                  const barHeight = (projection.total / maxTotal) * 85; // 85% max to leave room
+                  
+                  return (
+                    <div 
+                      key={i} 
+                      className="flex-1 flex flex-col justify-end group relative cursor-pointer h-full"
+                      onMouseEnter={() => setHoveredMonth(i)}
+                      onMouseLeave={() => setHoveredMonth(null)}
+                    >
+                      {/* Tooltip */}
+                      {hoveredMonth === i && (
+                        <div className="absolute bottom-full mb-4 left-1/2 -translate-x-1/2 bg-zinc-800 border border-white/10 rounded-xl p-4 z-20 min-w-[180px] shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+                          <div className="text-[10px] font-black uppercase tracking-widest text-orange-500 mb-3">
+                            Month {projection.month}
+                          </div>
+                          <div className="space-y-2 text-sm">
+                            <div className="flex justify-between gap-4">
+                              <span className="text-zinc-500">Principal:</span>
+                              <span className="text-white font-bold">₹{projection.principal.toLocaleString('en-IN')}</span>
+                            </div>
+                            <div className="flex justify-between gap-4">
+                              <span className="text-zinc-500">Yield:</span>
+                              <span className="text-green-500 font-bold">+₹{projection.yield.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between gap-4 border-t border-white/10 pt-2 mt-2">
+                              <span className="text-zinc-500">Total:</span>
+                              <span className="text-orange-500 font-black">₹{projection.total.toFixed(2)}</span>
+                            </div>
+                          </div>
+                          {/* Tooltip arrow */}
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-zinc-800" />
+                        </div>
+                      )}
+                      
+                      {/* Bar Container */}
+                      <div className="relative w-full h-full flex flex-col justify-end">
+                        {/* Yield portion (top - green/orange) */}
+                        <div 
+                          className={`w-full transition-all duration-500 ease-out rounded-t-md ${
+                            hoveredMonth === i 
+                              ? 'bg-orange-400 shadow-lg shadow-orange-500/40' 
+                              : 'bg-gradient-to-t from-orange-500 to-orange-400'
+                          }`}
+                          style={{ 
+                            height: `${barHeight}%`,
+                            minHeight: '20px'
+                          }} 
+                        >
+                          {/* Value label on bar */}
+                          {barHeight > 30 && (
+                            <div className="absolute top-2 left-1/2 -translate-x-1/2 text-[8px] font-black text-black/70 whitespace-nowrap">
+                              +₹{projection.yield.toFixed(0)}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              
+              {/* X-axis labels */}
+              <div className="flex gap-3 mt-3 px-4">
+                {monthlyProjections.map((_, i) => (
                   <div 
                     key={i} 
-                    className="flex-1 flex flex-col justify-end group relative cursor-pointer"
-                    onMouseEnter={() => setHoveredMonth(i)}
-                    onMouseLeave={() => setHoveredMonth(null)}
-                  >
-                    {/* Tooltip */}
-                    {hoveredMonth === i && (
-                      <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-zinc-800 border border-white/10 rounded-xl p-4 z-10 min-w-[180px] shadow-xl animate-in fade-in duration-200">
-                        <div className="text-[10px] font-black uppercase tracking-widest text-orange-500 mb-2">
-                          Month {projection.month}
-                        </div>
-                        <div className="space-y-2 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-zinc-500">Principal:</span>
-                            <span className="text-white font-bold">₹{projection.principal.toLocaleString('en-IN')}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-zinc-500">Yield:</span>
-                            <span className="text-orange-500 font-bold">+₹{projection.yield.toFixed(2)}</span>
-                          </div>
-                          <div className="flex justify-between border-t border-white/10 pt-2">
-                            <span className="text-zinc-500">Total:</span>
-                            <span className="text-white font-black">₹{projection.total.toFixed(2)}</span>
-                          </div>
-                        </div>
-                        {/* Tooltip arrow */}
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-zinc-800" />
-                      </div>
-                    )}
-                    
-                    {/* Bar */}
-                    <div 
-                      className={`w-full rounded-t-lg transition-all duration-700 ease-out ${
-                        hoveredMonth === i 
-                          ? 'bg-orange-500 shadow-lg shadow-orange-500/30' 
-                          : 'bg-gradient-to-t from-orange-600 to-orange-400'
-                      }`}
-                      style={{ 
-                        height: `${animatedBars[i]}%`,
-                        minHeight: animatedBars[i] > 0 ? '8px' : '0'
-                      }} 
-                    />
-                    
-                    {/* Month label */}
-                    <span className={`text-[9px] font-black text-center mt-3 uppercase transition-colors ${
+                    className={`flex-1 text-center text-[10px] font-black uppercase transition-colors ${
                       hoveredMonth === i ? 'text-orange-500' : 'text-zinc-600'
-                    }`}>
-                      M{i + 1}
-                    </span>
+                    }`}
+                  >
+                    M{i + 1}
                   </div>
                 ))}
               </div>
