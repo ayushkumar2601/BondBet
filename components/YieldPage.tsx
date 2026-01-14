@@ -125,10 +125,16 @@ const YieldPage: React.FC<YieldProps> = ({ portfolio, balance, tick }) => {
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-black text-zinc-600">₹</span>
               <input
                 type="number"
-                value={investmentAmount}
-                onChange={(e) => setInvestmentAmount(Math.max(100, Number(e.target.value)))}
-                className="w-full bg-black border border-white/10 rounded-xl pl-10 pr-4 py-4 text-xl font-black focus:outline-none focus:border-orange-500 text-white"
-                min={100}
+                value={investmentAmount || ''}
+                onChange={(e) => setInvestmentAmount(Number(e.target.value) || 0)}
+                onBlur={(e) => {
+                  // Set minimum value on blur if empty or too low
+                  if (!e.target.value || Number(e.target.value) < 100) {
+                    setInvestmentAmount(100);
+                  }
+                }}
+                placeholder="Enter amount"
+                className="w-full bg-black border border-white/10 rounded-xl pl-10 pr-4 py-4 text-xl font-black focus:outline-none focus:border-orange-500 text-white placeholder:text-zinc-600"
               />
             </div>
           </div>
