@@ -180,15 +180,19 @@ const MintSuccessModal: React.FC<MintSuccessModalProps> = ({
                     <p className="text-xs text-zinc-400 leading-relaxed mb-4">
                       This transaction was verified through Weil Chain's tamper-proof execution receipt system before minting. All rules were validated and recorded immutably.
                     </p>
-                    <a
-                      href={`/receipt/${receiptId}`}
+                    <button
+                      onClick={() => {
+                        // Navigate to receipt view
+                        window.location.hash = `receipt/${receiptId}`;
+                        onClose();
+                      }}
                       className="inline-flex items-center gap-2 text-sm font-bold text-purple-400 hover:text-purple-300 transition-colors"
                     >
                       <span>View Execution Receipt</span>
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
-                    </a>
+                    </button>
                   </div>
                 </div>
               </div>

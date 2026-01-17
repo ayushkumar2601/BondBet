@@ -190,9 +190,14 @@ function simulateWeilChainVerification(input: VerificationInput): VerificationRe
   };
 
   // Simple hash generation (in production, use crypto library)
-  const receipt_hash = btoa(JSON.stringify(receipt_data))
-    .replace(/[^a-zA-Z0-9]/g, '')
-    .substring(0, 64);
+  const hashString = JSON.stringify(receipt_data);
+  let hash = 0;
+  for (let i = 0; i < hashString.length; i++) {
+    const char = hashString.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  const receipt_hash = Math.abs(hash).toString(16).padStart(16, '0').toUpperCase();
 
   // Generate unique receipt ID
   const receipt_id = `WEIL-${Date.now()}-${receipt_hash.substring(0, 8).toUpperCase()}`;

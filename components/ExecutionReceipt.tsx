@@ -44,7 +44,10 @@ const ExecutionReceipt: React.FC<ExecutionReceiptProps> = ({ receiptId, onBack }
           <h2 className="text-2xl font-black uppercase mb-4">Receipt Not Found</h2>
           <p className="text-zinc-500 mb-8">The execution receipt could not be located.</p>
           <button
-            onClick={onBack}
+            onClick={() => {
+              window.location.hash = '';
+              onBack();
+            }}
             className="bg-zinc-800 hover:bg-zinc-700 text-white px-8 py-4 rounded-full font-bold uppercase tracking-widest text-sm transition-all"
           >
             Go Back
@@ -67,7 +70,10 @@ const ExecutionReceipt: React.FC<ExecutionReceiptProps> = ({ receiptId, onBack }
         {/* Header */}
         <div className="mb-12">
           <button
-            onClick={onBack}
+            onClick={() => {
+              window.location.hash = '';
+              onBack();
+            }}
             className="flex items-center gap-2 text-zinc-500 hover:text-white transition-colors mb-6 font-bold uppercase tracking-widest text-sm"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

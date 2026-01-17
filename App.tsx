@@ -79,6 +79,25 @@ const App: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
+  // Handle hash-based routing for receipts
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.slice(1); // Remove #
+      if (hash.startsWith('receipt/')) {
+        const receiptId = hash.replace('receipt/', '');
+        setCurrentReceiptId(receiptId);
+        setCurrentView('receipt');
+      }
+    };
+
+    // Check on mount
+    handleHashChange();
+
+    // Listen for hash changes
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
   const fetchBalance = useCallback(async (publicKey: web3.PublicKey) => {
     try {
       console.log('[Phantom] Fetching SOL balance for:', publicKey.toString());
