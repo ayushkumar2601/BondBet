@@ -10,6 +10,7 @@ import YieldPage from './components/YieldPage';
 import Education from './components/Education';
 import Footer from './components/Footer';
 import MintSuccessModal from './components/MintSuccessModal';
+import ExecutionReceipt from './components/ExecutionReceipt';
 import { saveHolding, fetchHoldings, HoldingRecord } from './lib/supabase';
 
 // --- Types & Constants ---
@@ -37,7 +38,7 @@ export interface Holding {
   txHash: string;
 }
 
-export type View = 'dashboard' | 'market' | 'portfolio' | 'yield' | 'education' | 'landing';
+export type View = 'dashboard' | 'market' | 'portfolio' | 'yield' | 'education' | 'landing' | 'receipt';
 
 const INDIAN_BONDS: Bond[] = [
   { id: 'in-gs-2030', name: 'India G-Sec 2030 (7.18%)', apy: 7.18, maturityDate: '2030-01-15', pricePerUnit: 100, risk: 'Sovereign', duration: '6 Years', totalSupply: 10000000, remainingSupply: 8400000 },
@@ -54,6 +55,7 @@ const App: React.FC = () => {
   const [pubkey, setPubkey] = useState<string | null>(null);
   const [solBalance, setSolBalance] = useState<number>(0);
   const [currentView, setCurrentView] = useState<View>('landing');
+  const [currentReceiptId, setCurrentReceiptId] = useState<string | null>(null);
   const [portfolio, setPortfolio] = useState<Holding[]>([]);
   const [marketBonds] = useState<Bond[]>(INDIAN_BONDS);
   const [tick, setTick] = useState(0);
@@ -66,6 +68,7 @@ const App: React.FC = () => {
     investedAmount: number;
     units: number;
     certificateId: string;
+    receiptId?: string | null;
   } | null>(null);
 
   // Initialize connection to Devnet
@@ -235,6 +238,42 @@ const App: React.FC = () => {
     console.log('[Phantom] Initiating transaction for bond:', bondId);
 
     try {
+      // ========================================================================
+      // STEP 1: WEIL CHAIN VERIFICATION (HACKATHON REQUIREMENT)
+      // ========================================================================
+      console.log('[Weil Chain] Generating execution receipt...');
+      
+      const { verifyBondMinting, linkSolanaTransaction } = await import('./lib/weilChain');
+      
+      const verificationInput = {
+        wallet_address: pubkey,
+        bond_id: bond.id,
+        bond_name: bond.name,
+        units: inrAmount / bond.pricePerUnit,
+        invested_amount: inrAmount,
+        bond_metadata: {
+          active_status: true,
+          total_supply: bond.totalSupply,
+          issued_supply: bond.totalSupply - bond.remainingSupply,
+          apy: bond.apy * 100, // Convert to basis points
+          maturity_date: bond.maturityDate
+        }
+      };
+      
+      const verificationResult = await verifyBondMinting(verificationInput);
+      
+      if (!verificationResult.success || !verificationResult.verified) {
+        const errorMsg = verificationResult.errors?.join(', ') || 'Verification failed';
+        alert(`Weil Chain verification failed: ${errorMsg}`);
+        setIsMinting(false);
+        return;
+      }
+      
+      console.log('[Weil Chain] Receipt generated:', verificationResult.receiptId);
+      
+      // ========================================================================
+      // STEP 2: SOLANA TRANSACTION (EXISTING LOGIC)
+      // ========================================================================
       const solToPay = inrAmount / SOL_TO_INR_DEMO_RATE;
       const lamports = Math.floor(solToPay * web3.LAMPORTS_PER_SOL);
 
@@ -252,7 +291,6 @@ const App: React.FC = () => {
 
       console.log('[Phantom] Requesting transaction signature from extension...');
       
-      // 3. Extension Sign-and-Send (Popup Confirmation)
       const { signature } = await solana.signAndSendTransaction(transaction);
       
       console.log('[Phantom] Transaction signed. Signature:', signature);
@@ -270,6 +308,17 @@ const App: React.FC = () => {
 
       console.log('[Phantom] Transaction confirmed successfully.');
 
+      // ========================================================================
+      // STEP 3: LINK SOLANA TX TO WEIL CHAIN RECEIPT
+      // ========================================================================
+      if (verificationResult.receiptId) {
+        await linkSolanaTransaction(verificationResult.receiptId, signature);
+        console.log('[Weil Chain] Receipt linked to Solana transaction');
+      }
+
+      // ========================================================================
+      // STEP 4: SAVE HOLDING (EXISTING LOGIC)
+      // ========================================================================
       const newHolding: Holding = {
         id: `BOND-${signature.slice(0, 8)}`.toUpperCase(),
         bondId: bond.id,
@@ -282,7 +331,6 @@ const App: React.FC = () => {
         txHash: signature
       };
 
-      // Save to Supabase
       const holdingRecord: HoldingRecord = {
         id: newHolding.id,
         wallet_address: pubkey,
@@ -310,10 +358,11 @@ const App: React.FC = () => {
         txSignature: signature,
         investedAmount: inrAmount,
         units: inrAmount / bond.pricePerUnit,
-        certificateId: newHolding.id
+        certificateId: newHolding.id,
+        receiptId: verificationResult.receiptId // Pass receipt ID to modal
       });
     } catch (err: any) {
-      console.error("[Phantom] Transaction Error:", err);
+      console.error("[Transaction Error]:", err);
       if (err.code === 4001) {
         alert("Transaction request was cancelled by the user.");
       } else {
@@ -336,6 +385,7 @@ const App: React.FC = () => {
       case 'yield': return <YieldPage portfolio={portfolio} balance={solBalance * SOL_TO_INR_DEMO_RATE} tick={tick} />;
       case 'education': return <Education marketBonds={marketBonds} onNavigate={setCurrentView} />;
       case 'landing': return <LandingPage onConnect={handleWalletClick} isConnected={walletConnected} />;
+      case 'receipt': return currentReceiptId ? <ExecutionReceipt receiptId={currentReceiptId} onBack={() => setCurrentView('portfolio')} /> : <LandingPage onConnect={handleWalletClick} isConnected={walletConnected} />;
       default: return <LandingPage onConnect={handleWalletClick} isConnected={walletConnected} />;
     }
   };
@@ -376,6 +426,7 @@ const App: React.FC = () => {
           investedAmount={mintSuccessData.investedAmount}
           units={mintSuccessData.units}
           certificateId={mintSuccessData.certificateId}
+          receiptId={mintSuccessData.receiptId}
         />
       )}
     </div>

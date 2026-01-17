@@ -9,6 +9,7 @@ interface MintSuccessModalProps {
   investedAmount: number;
   units: number;
   certificateId: string;
+  receiptId?: string | null;
 }
 
 const MintSuccessModal: React.FC<MintSuccessModalProps> = ({
@@ -19,7 +20,8 @@ const MintSuccessModal: React.FC<MintSuccessModalProps> = ({
   txSignature,
   investedAmount,
   units,
-  certificateId
+  certificateId,
+  receiptId
 }) => {
   if (!isOpen) return null;
 
@@ -163,6 +165,34 @@ const MintSuccessModal: React.FC<MintSuccessModalProps> = ({
                 Close
               </button>
             </div>
+
+            {/* Weil Chain Execution Receipt Notice */}
+            {receiptId && (
+              <div className="mt-6 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-2xl p-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="text-sm font-black uppercase mb-2 text-purple-400">🔒 Execution Receipt Generated on Weil Chain</h4>
+                    <p className="text-xs text-zinc-400 leading-relaxed mb-4">
+                      This transaction was verified through Weil Chain's tamper-proof execution receipt system before minting. All rules were validated and recorded immutably.
+                    </p>
+                    <a
+                      href={`/receipt/${receiptId}`}
+                      className="inline-flex items-center gap-2 text-sm font-bold text-purple-400 hover:text-purple-300 transition-colors"
+                    >
+                      <span>View Execution Receipt</span>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
